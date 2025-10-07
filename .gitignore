@@ -1,5 +1,10 @@
+# Ignorer les fichiers de données bruts
+data/raw/tickets.csv
+data/processed/tickets_processed.csv
+# Ignorer les fichiers temporaires et caches
+.dvc/cache/
+.dvc/tmp/
 *.pyc
-__pycache__
-.venv
-data/*.csv  # Large files handled by DVC
-models/*
+__pycache__/
+# Ignorer les fichiers MLflow locaux
+mlruns/

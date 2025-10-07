@@ -1,0 +1,8 @@
+stages:
+  preprocess:
+    cmd: python scripts/prepare.py
+    deps:
+    - scripts/prepare.py
+    - data/raw/tickets.csv
+    outs:
+    - data/processed/tickets_processed.csv
