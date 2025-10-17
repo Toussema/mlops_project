@@ -16,3 +16,20 @@ stages:
       hash: md5
       md5: 0194f13d2b18ab84931a42d370070141
       size: 14520986
+  train_transformer:
+    cmd: python scripts/train_transformer.py
+    deps:
+    - path: data/processed/tickets_processed.csv
+      hash: md5
+      md5: 0194f13d2b18ab84931a42d370070141
+      size: 14520986
+    - path: scripts/train_transformer.py
+      hash: md5
+      md5: ab49fc66410448dceb4e0f7f7ca88aec
+      size: 3944
+    outs:
+    - path: models/transformer
+      hash: md5
+      md5: df9eeedc4c918dc8ce56a25760cb6c3f.dir
+      size: 5418044670
+      nfiles: 28

@@ -6,3 +6,10 @@ stages:
     - data/raw/tickets.csv
     outs:
     - data/processed/tickets_processed.csv
+  train_transformer:
+    cmd: python scripts/train_transformer.py
+    deps:
+    - scripts/train_transformer.py
+    - data/processed/tickets_processed.csv
+    outs:
+    - models/transformer
