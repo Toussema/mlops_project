@@ -1,0 +1,75 @@
+# Configuration pour Black, isort, et autres outils Python
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | mlruns
+  | models
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+known_third_party = ["fastapi", "uvicorn", "transformers", "torch", "prometheus_client", "mlflow"]
+skip = [".venv", "venv", "mlruns", "models"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = """
+    -v
+    --strict-markers
+    --cov=.
+    --cov-report=term-missing
+    --cov-report=html
+    --cov-report=xml
+"""
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.pylint.messages_control]
+disable = [
+    "C0111",  # missing-docstring
+    "C0103",  # invalid-name
+    "R0913",  # too-many-arguments
+    "R0914",  # too-many-locals
+]
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/mlruns/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]

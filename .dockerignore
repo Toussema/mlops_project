@@ -1,0 +1,113 @@
+# ========================================
+# FICHIERS VOLUMINEUX À EXCLURE EN PRIORITÉ
+# ========================================
+
+# Environnements virtuels (souvent > 1GB)
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+**/.virtualenv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Logs et données
+*.log
+*.csv
+*.parquet
+*.xlsx
+*.xls
+
+# Exclure les JSON sauf ceux du modèle
+*.json
+!models/transformer/*.json
+
+# Fichiers de configuration locaux
+.env
+.env.local
+
+# MLflow et expérimentations
+mlruns/
+mlartifacts/
+experiments/
+outputs/
+
+# Git et versioning
+.git/
+.gitignore
+.gitattributes
+
+# DVC (Data Version Control)
+.dvc/
+*.dvc
+
+# Tests
+tests/
+test/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentation
+docs/
+*.md
+README.md
+LICENSE
+
+# Scripts non nécessaires
+scripts/
+notebooks/
+*.ipynb
+
+# Monitoring (si non utilisé dans le conteneur)
+monitoring/
+grafana/
+prometheus/
+
+# Configuration CI/CD
+.github/
+.gitlab-ci.yml
+*.yaml
+*.yml
+!docker-compose.yml
+
+# Données volumineuses (IMPORTANT!)
+data/
+datasets/
+raw_data/
+processed_data/
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+
+# Modèles pré-entraînés volumineux (gardez uniquement celui nécessaire)
+models/*
+!models/transformer/
+
+# Docker
+docker/
+Dockerfile
+.dockerignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+dist/
+*.egg-info/

@@ -1,10 +1,39 @@
-# Ignorer les fichiers de données bruts
-data/raw/tickets.csv
-data/processed/tickets_processed.csv
-# Ignorer les fichiers temporaires et caches
+# Données brutes et traitées
+data/
+data/raw/
+data/processed/
+
+# Environnement virtuel
+.venv/
+
+# Fichiers temporaires et caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+*.bak
+
+# MLflow artifacts
+mlruns/
+mlartifacts/
+
+# Modèles volumineux
+models/
+models/transformer/
+models/tfidf/
+
+# DVC fichiers locaux
 .dvc/cache/
 .dvc/tmp/
-*.pyc
-__pycache__/
-# Ignorer les fichiers MLflow locaux
-mlruns/
+.dvc/plots/
+
+# Docker volumes
+prometheus-data/
+grafana-data/
+
+# Fichiers temporaires divers
+*.swp
+*.swo
+*.tmp
+*.bak

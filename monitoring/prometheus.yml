@@ -1,0 +1,40 @@
+# Configuration Prometheus pour scraper les métriques
+global:
+  scrape_interval: 15s  # Collecter les métriques toutes les 15 secondes
+  evaluation_interval: 15s  # Évaluer les règles toutes les 15 secondes
+  external_labels:
+    monitor: 'mlops-project'
+
+# Alerting (optionnel)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: []
+
+# Configuration des règles (optionnel)
+# rule_files:
+#   - "alert_rules.yml"
+
+# Configuration des sources de métriques
+scrape_configs:
+  # ============================================
+  # Scraper le service Transformer
+  # ============================================
+  - job_name: 'transformer_service'
+    static_configs:
+      - targets: ['transformer_service:8000']
+        labels:
+          service: 'transformer-api'
+          environment: 'development'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ============================================
+  # Scraper Prometheus lui-même (auto-monitoring)
+  # ============================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'

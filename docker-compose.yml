@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # Service API Transformer
+  # ============================================
+  transformer_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: transformer-api
+    user: root
+    ports:
+      - "8000:8000"
+    volumes:
+      # Monter le modèle en volume pour faciliter les mises à jour
+      - ./models/transformer:/app/models/transformer:ro
+    environment:
+      - TRANSFORMERS_NO_TF=1
+      - TRANSFORMERS_NO_FLAX=1
+      - TRANSFORMERS_NO_JAX=1
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/metrics')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  # ============================================
+  # MLflow Tracking Server
+  # ============================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.19.0
+    container_name: mlflow-server
+    ports:
+      - "5000:5000"
+    volumes:
+      # Monter le dossier mlruns local
+      - ./mlruns:/mlflow/mlruns
+      # Optionnel : stockage des artifacts
+      - ./mlartifacts:/mlflow/mlartifacts
+    command: >
+      mlflow server 
+      --host 0.0.0.0 
+      --port 5000 
+      --backend-store-uri file:///mlflow/mlruns
+      --default-artifact-root file:///mlflow/mlartifacts
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  # ============================================
+  # Prometheus - Monitoring
+  # ============================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - mlops-network
+    restart: unless-stopped
+    depends_on:
+      - transformer_service
+
+  # ============================================
+  # Grafana - Visualisation
+  # ============================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - mlops-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+# ============================================
+# Réseaux
+# ============================================
+networks:
+  mlops-network:
+    driver: bridge
+
+# ============================================
+# Volumes persistants
+# ============================================
+volumes:
+  prometheus-data:
+  grafana-data:
