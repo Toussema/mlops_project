@@ -31,6 +31,32 @@ scrape_configs:
     scrape_timeout: 5s
 
   # ============================================
+  # Scraper le service TF-IDF
+  # ============================================
+  - job_name: 'tfidf_service'
+    static_configs:
+      - targets: ['tfidf_service:8001']
+        labels:
+          service: 'tfidf-api'
+          environment: 'development'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ============================================
+  # Scraper l'Agent de routage (NOUVEAU)
+  # ============================================
+  - job_name: 'agent_service'
+    static_configs:
+      - targets: ['agent_service:8002']
+        labels:
+          service: 'agent-router'
+          environment: 'development'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # ============================================
   # Scraper Prometheus lui-même (auto-monitoring)
   # ============================================
   - job_name: 'prometheus'

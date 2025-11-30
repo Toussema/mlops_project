@@ -1,0 +1,26 @@
+# Dockerfile pour l'interface Streamlit
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Installer les dépendances
+RUN pip install --no-cache-dir \
+    streamlit==1.41.1 \
+    requests==2.32.5 \
+    pandas==2.2.3
+
+ENV PYTHONUNBUFFERED=1
+
+# Copier l'application
+COPY app_streamlit.py /app/app_streamlit.py
+
+# Utilisateur non-root
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app_streamlit.py", "--server.port=8501", "--server.address=0.0.0.0"]

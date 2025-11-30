@@ -1,0 +1,230 @@
+{
+  "dashboard": {
+    "title": "MLOps APIs Monitoring - Transformer & TF-IDF",
+    "tags": ["mlops", "transformer", "tfidf", "api"],
+    "timezone": "browser",
+    "refresh": "5s",
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Requests - Both Models",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(request_count_total{job=\"transformer_service\"})",
+            "refId": "A",
+            "legendFormat": "Transformer"
+          },
+          {
+            "expr": "sum(request_count_total{job=\"tfidf_service\"})",
+            "refId": "B",
+            "legendFormat": "TF-IDF"
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Request Rate Comparison (req/s)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(request_count_total{job=\"transformer_service\"}[1m])",
+            "refId": "A",
+            "legendFormat": "Transformer"
+          },
+          {
+            "expr": "rate(request_count_total{job=\"tfidf_service\"}[1m])",
+            "refId": "B",
+            "legendFormat": "TF-IDF"
+          }
+        ],
+        "legend": {
+          "show": true
+        }
+      },
+      {
+        "id": 3,
+        "title": "Average Latency Comparison",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(request_latency_seconds_sum{job=\"transformer_service\"}[5m]) / rate(request_latency_seconds_count{job=\"transformer_service\"}[5m])",
+            "refId": "A",
+            "legendFormat": "Transformer"
+          },
+          {
+            "expr": "rate(request_latency_seconds_sum{job=\"tfidf_service\"}[5m]) / rate(request_latency_seconds_count{job=\"tfidf_service\"}[5m])",
+            "refId": "B",
+            "legendFormat": "TF-IDF"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "P95 Latency by Model",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(request_latency_seconds_bucket{job=\"transformer_service\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "Transformer P95"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(request_latency_seconds_bucket{job=\"tfidf_service\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "TF-IDF P95"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 4
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Transformer - Detailed Latency",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(request_latency_seconds_bucket{job=\"transformer_service\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.90, rate(request_latency_seconds_bucket{job=\"transformer_service\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "p90"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(request_latency_seconds_bucket{job=\"transformer_service\"}[5m]))",
+            "refId": "C",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "TF-IDF - Detailed Latency",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(request_latency_seconds_bucket{job=\"tfidf_service\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.90, rate(request_latency_seconds_bucket{job=\"tfidf_service\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "p90"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(request_latency_seconds_bucket{job=\"tfidf_service\"}[5m]))",
+            "refId": "C",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Request Distribution by Model",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "sum(request_count_total{job=\"transformer_service\"})",
+            "refId": "A",
+            "legendFormat": "Transformer"
+          },
+          {
+            "expr": "sum(request_count_total{job=\"tfidf_service\"})",
+            "refId": "B",
+            "legendFormat": "TF-IDF"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Service Health Status",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 24},
+        "targets": [
+          {
+            "expr": "up{job=\"transformer_service\"}",
+            "refId": "A",
+            "legendFormat": "Transformer"
+          },
+          {
+            "expr": "up{job=\"tfidf_service\"}",
+            "refId": "B",
+            "legendFormat": "TF-IDF"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {
+                "type": "value",
+                "options": {
+                  "0": {"text": "DOWN", "color": "red"},
+                  "1": {"text": "UP", "color": "green"}
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Error Rate (if any)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 24},
+        "targets": [
+          {
+            "expr": "rate(request_count_total{job=\"transformer_service\", status=\"error\"}[5m])",
+            "refId": "A",
+            "legendFormat": "Transformer Errors"
+          },
+          {
+            "expr": "rate(request_count_total{job=\"tfidf_service\", status=\"error\"}[5m])",
+            "refId": "B",
+            "legendFormat": "TF-IDF Errors"
+          }
+        ]
+      }
+    ]
+  }
+}

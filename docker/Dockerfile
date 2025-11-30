@@ -47,7 +47,7 @@ COPY models/transformer /app/models/transformer
 RUN useradd -m -u 1000 appuser && \
     chown -R appuser:appuser /app
 
-USER appuser
+USER root
 
 # Healthcheck simplifié (sans requests qui n'est pas installé)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \

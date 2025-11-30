@@ -1,0 +1,41 @@
+# Dockerfile pour l'API TF-IDF + SVM
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Mettre à jour pip
+RUN pip install --no-cache-dir --upgrade pip
+
+# Installer les dépendances avec la bonne version de scikit-learn
+RUN pip install --no-cache-dir \
+    fastapi==0.119.0 \
+    uvicorn[standard]==0.38.0 \
+    prometheus-client==0.23.1 \
+    scikit-learn==1.7.2 \
+    numpy==2.3.3 \
+    joblib
+
+# Variables d'environnement
+ENV PYTHONUNBUFFERED=1
+
+# Copier l'application
+COPY app_tfidf.py /app/app_tfidf.py
+
+# Copier le modèle TF-IDF
+COPY models/tfidf /app/models/tfidf
+
+# Créer un utilisateur non-root
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+USER appuser
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"
+
+EXPOSE 8001
+
+# Commande de démarrage
+CMD ["uvicorn", "app_tfidf:app", "--host", "0.0.0.0", "--port", "8001"]

@@ -26,6 +26,8 @@ __pycache__/
 # Exclure les JSON sauf ceux du modèle
 *.json
 !models/transformer/*.json
+!models/tfidf/*.json
+
 
 # Fichiers de configuration locaux
 .env
@@ -90,6 +92,8 @@ processed_data/
 # Modèles pré-entraînés volumineux (gardez uniquement celui nécessaire)
 models/*
 !models/transformer/
+!models/tfidf/
+
 
 # Docker
 docker/

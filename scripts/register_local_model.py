@@ -1,3 +1,4 @@
+# scripts\register_local_model.py:
 """
 Script corrigé pour enregistrer le modèle Transformer dans MLflow
 avec persistance garantie des artifacts

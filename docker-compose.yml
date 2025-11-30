@@ -9,11 +9,9 @@ services:
       context: .
       dockerfile: docker/Dockerfile
     container_name: transformer-api
-    user: root
     ports:
       - "8000:8000"
     volumes:
-      # Monter le modèle en volume pour faciliter les mises à jour
       - ./models/transformer:/app/models/transformer:ro
     environment:
       - TRANSFORMERS_NO_TF=1
@@ -31,6 +29,77 @@ services:
     restart: unless-stopped
 
   # ============================================
+  # Service API TF-IDF + SVM
+  # ============================================
+  tfidf_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tfidf
+    container_name: tfidf-api
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./models/tfidf:/app/models/tfidf:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - mlops-network
+    restart: unless-stopped
+
+  # ============================================
+  # Agent de routage intelligent
+  # ============================================
+  agent_service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.agent
+    container_name: agent-router
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - mlops-network
+    restart: unless-stopped
+    depends_on:
+      - transformer_service
+      - tfidf_service
+
+  # ============================================
+  # Interface utilisateur Streamlit
+  # ============================================
+  streamlit_app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.streamlit
+    container_name: streamlit-ui
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONUNBUFFERED=1
+      - AGENT_URL=http://agent_service:8002
+      - TRANSFORMER_URL=http://transformer_service:8000
+      - TFIDF_URL=http://tfidf_service:8001
+    networks:
+      - mlops-network
+    restart: unless-stopped
+    depends_on:
+      - agent_service
+
+  # ============================================
   # MLflow Tracking Server
   # ============================================
   mlflow:
@@ -39,9 +108,7 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      # Monter le dossier mlruns local
       - ./mlruns:/mlflow/mlruns
-      # Optionnel : stockage des artifacts
       - ./mlartifacts:/mlflow/mlartifacts
     command: >
       mlflow server 
@@ -74,6 +141,8 @@ services:
     restart: unless-stopped
     depends_on:
       - transformer_service
+      - tfidf_service
+      - agent_service
 
   # ============================================
   # Grafana - Visualisation
@@ -89,22 +158,17 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/mlops-apis.json
     networks:
       - mlops-network
     restart: unless-stopped
     depends_on:
       - prometheus
 
-# ============================================
-# Réseaux
-# ============================================
 networks:
   mlops-network:
     driver: bridge
 
-# ============================================
-# Volumes persistants
-# ============================================
 volumes:
   prometheus-data:
   grafana-data:
