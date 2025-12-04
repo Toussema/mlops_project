@@ -4,7 +4,6 @@ Interface utilisateur Streamlit pour la classification de tickets
 
 import os
 import time
-
 import pandas as pd
 import requests
 import streamlit as st
@@ -69,10 +68,8 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 Informations")
 st.sidebar.info(
     """
-**Agent Intelligent**: Route automatiquement vers le meilleur modèle
-
-**Transformer**: Modèle deep learning (précis, lent)
-
+**Agent Intelligent**: Route automatiquement vers le meilleur modèle  
+**Transformer**: Modèle deep learning (précis, lent)  
 **TF-IDF + SVM**: Modèle classique (rapide, efficace)
 """
 )
@@ -95,8 +92,12 @@ ticket_text = st.text_area(
 if st.button("🚀 Classifier", type="primary"):
     if not ticket_text.strip():
         st.warning("⚠️ Veuillez entrer un texte de ticket")
+
     else:
-        # Mode Agent
+
+        # ---------------------------------------------------------
+        # 🧠 MODE AGENT INTELLIGENT
+        # ---------------------------------------------------------
         if mode == "Agent Intelligent":
             with st.spinner("🤖 L'agent analyse le ticket..."):
                 try:
@@ -117,7 +118,7 @@ if st.button("🚀 Classifier", type="primary"):
                             st.markdown("### 🎯 Prédiction")
                             st.markdown(
                                 f'<div class="prediction-box">'
-                                f'<h2 style="color: #1f77b4;">{result["prediction"]}</h2>'
+                                f'<h2 style="color: #1f77b4;">{result["category"]}</h2>'
                                 f"</div>",
                                 unsafe_allow_html=True,
                             )
@@ -134,17 +135,12 @@ if st.button("🚀 Classifier", type="primary"):
                         st.error(f"❌ Erreur HTTP: {response.status_code}")
                         st.code(response.text)
 
-                except requests.exceptions.ConnectionError as e:
-                    st.error(f"❌ Erreur de connexion à l'agent")
-                    st.error(f"URL: {AGENT_URL}")
-                    st.error(f"Détails: {str(e)}")
-                except requests.exceptions.Timeout:
-                    st.error("⏱️ Timeout: L'agent met trop de temps à répondre")
                 except Exception as e:
-                    st.error(f"❌ Erreur inattendue: {type(e).__name__}")
-                    st.error(str(e))
+                    st.error(f"❌ Erreur inattendue: {str(e)}")
 
-        # Mode Transformer
+        # ---------------------------------------------------------
+        # 🤖 MODE TRANSFORMER SEUL (corrigé)
+        # ---------------------------------------------------------
         elif mode == "Transformer uniquement":
             with st.spinner("🤖 Classification avec Transformer..."):
                 try:
@@ -152,10 +148,15 @@ if st.button("🚀 Classifier", type="primary"):
                     response = requests.post(
                         TRANSFORMER_URL, json={"text": ticket_text}, timeout=30
                     )
-                    latency = time.time() - start_time
+                    latency_transformer = time.time() - start_time
 
                     if response.status_code == 200:
                         result = response.json()
+
+                        # CORRECTION : gérer "category" OU "prediction"
+                        prediction = result.get("category") or result.get("prediction", "Unknown")
+                        confidence = result.get("confidence", 0.85)
+                        latency = result.get("latency", latency_transformer)
 
                         col1, col2 = st.columns(2)
 
@@ -163,26 +164,29 @@ if st.button("🚀 Classifier", type="primary"):
                             st.markdown("### 🎯 Prédiction")
                             st.markdown(
                                 f'<div class="prediction-box">'
-                                f'<h2 style="color: #ff7f0e;">{result["category"]}</h2>'
+                                f'<h2 style="color: #ff7f0e;">{prediction}</h2>'
                                 f"</div>",
                                 unsafe_allow_html=True,
                             )
 
                         with col2:
                             st.markdown("### 📊 Métriques")
-                            st.metric("Confiance", f"{result['confidence']:.2%}")
-                            st.metric("Latence", f"{result['latency']:.3f}s")
+                            st.metric("Confiance", f"{confidence:.2%}")
+                            st.metric("Latence", f"{latency:.3f}s")
                             st.markdown(
                                 '<span class="model-badge transformer-badge">Transformer</span>',
                                 unsafe_allow_html=True,
                             )
+
                     else:
                         st.error(f"❌ Erreur: {response.status_code}")
 
                 except Exception as e:
                     st.error(f"❌ Erreur de connexion: {e}")
 
-        # Mode TF-IDF
+        # ---------------------------------------------------------
+        # 📊 MODE TF-IDF SEUL
+        # ---------------------------------------------------------
         elif mode == "TF-IDF uniquement":
             with st.spinner("📊 Classification avec TF-IDF + SVM..."):
                 try:
@@ -218,12 +222,15 @@ if st.button("🚀 Classifier", type="primary"):
                 except Exception as e:
                     st.error(f"❌ Erreur de connexion: {e}")
 
-        # Mode Comparaison
-        else:  # Comparaison
+        # ---------------------------------------------------------
+        # 📊 MODE COMPARAISON DES DEUX MODELES
+        # ---------------------------------------------------------
+        else:
             st.markdown("### 📊 Comparaison des modèles")
 
             col1, col2 = st.columns(2)
 
+            # Transformer
             with col1:
                 st.markdown("#### 🤖 Transformer")
                 with st.spinner("Classification..."):
@@ -236,7 +243,7 @@ if st.button("🚀 Classifier", type="primary"):
 
                         if response.status_code == 200:
                             result = response.json()
-                            st.success(f"**Prédiction**: {result['category']}")
+                            st.success(f"**Prédiction**: {result.get('category') or result.get('prediction')}")
                             st.metric("Confiance", f"{result['confidence']:.2%}")
                             st.metric("Latence", f"{result['latency']:.3f}s")
                         else:
@@ -244,6 +251,7 @@ if st.button("🚀 Classifier", type="primary"):
                     except Exception as e:
                         st.error(f"❌ Erreur: {e}")
 
+            # TF-IDF
             with col2:
                 st.markdown("#### 📊 TF-IDF + SVM")
                 with st.spinner("Classification..."):

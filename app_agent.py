@@ -43,7 +43,7 @@ class TicketInput(BaseModel):
 
 
 class AgentResponse(BaseModel):
-    prediction: str
+    category: str  # ← Changé de "prediction"
     model_used: str
     confidence: float
     latency: float
@@ -133,7 +133,7 @@ async def predict(ticket: TicketInput):
         AGENT_LATENCY.observe(latency)
 
         return AgentResponse(
-            prediction=prediction,
+            category=prediction,  # ← Changé
             model_used=model_used,
             confidence=confidence,
             latency=latency,
